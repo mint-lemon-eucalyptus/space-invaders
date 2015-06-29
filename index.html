@@ -1,12 +1,31 @@
-<!DOCTYPE html>
+<!DOCTYPE HTML>
 <html>
 <head>
-    <title></title>
     <link rel="stylesheet" href="css/style.css">
+    <style>
+        body {
+            margin: 0px;
+            padding: 0px;
+        }
+    </style>
 </head>
 <body>
-<script src="lib/fabric.js"></script>
+<div id="container"></div>
+<!--<script src="http://d3lp1msu2r81bx.cloudfront.net/kjs/js/lib/kinetic-v5.0.2.min.js"></script>-->
+<script src="js/kinetic-v5.0.1-beta.js"></script>
 <script src="js/Screen.js"></script>
-<script src="js/app.js"></script>
+<script src="js/async.min.js"></script>
+<script defer="defer">
+
+    var game = new Game({
+        stage: {
+            container: 'container',
+            width: 578,
+            fill: 'black',
+            height: 500
+        }
+    });
+
+</script>
 </body>
-</html>
+</html>      

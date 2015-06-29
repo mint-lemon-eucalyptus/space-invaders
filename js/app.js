@@ -1,83 +1,432 @@
-//fabric.Object.prototype.selectable = false;
-/*
- var canvas = new fabric.Canvas('canva');
+paper.install(window);
+window.onload = function () {
+    paper.setup('myCanvas');
 
- var text = new fabric.Text('hello world', { left: 100, top: 100 });
- canvas.add(text);
- /*
- var animateX = -300;
 
- function onChange() {
- canvas.renderAll();
- }
- function onCompleteMoveX() {
- animateX = animateX == 300 ? 100 : 300;
- //    animateProperty = animateProperty == 'left' ? 'right' : 'left';
- group.animate('left', animateX, {
- onChange: onChange,
- onComplete: moveY,
- duration: 2000,
- easing: fabric.util.ease.easeOutSine
- });
- }
+    var backGround = new Path.Rectangle(50, 50, 400, 400);
+    backGround.fillColor = 'black';
 
- function moveY() {
- group.animate('top', group.top + 30, {
- onChange: onChange,
- onComplete: function () {
- console.log(group.top, group.height, canvas.height)
- if ((group.top + group.height) >= canvas.height) {
- console.log('top == 0')
- } else {
- onCompleteMoveX();
- }
+// Change these  parameters
+    var ship = drawShip(220, 400, 5);
+    drawUFO(190, 70, 8);
 
- },
- duration: 200,
- easing: fabric.util.ease.easeOutSine
- })
+    for (var x = 0; x < 400; x += 50) {
+        // and these  parameters
+        drawLimeAlien(60 + x, 150, 3);
+        drawBlueAlien(60 + x, 190, 3);
+        drawRedAlien(60 + x, 230, 3);
+        drawYellowAlien(60 + x, 270, 3);
+    }
 
- }
+    paper.onFrame=function(event) {
+        console.log(event)
+        // Each frame, rotate the path by 3 degrees:
+        ship.rotate(3);
+    }
 
- // добавляем прямоугольник, чтобы он отобразился
+///////////////////////////////////////////////////////
+//
+// this function draws a ship
+//
+    function drawShip(xPosition, yPosition, magnification) {
 
- var group = new fabric.Group([], {
- top: 100,
- left: 100
- });
+        var xPos = xPosition;
+        var yPos = yPosition;
+        var m = magnification;
 
- canvas.add(group);
+        var ship = new Path();
+        ship.fillColor = 'deepSkyBlue';
+        ship.add(new Point(0 * m + xPos, yPos + m * 7));
+        ship.add(new Point(0 * m + xPos, yPos + m * 4));
+        ship.add(new Point(1 * m + xPos, yPos + m * 4));
+        ship.add(new Point(1 * m + xPos, yPos + m * 3));
+        ship.add(new Point(5 * m + xPos, yPos + m * 3));
+        ship.add(new Point(5 * m + xPos, yPos + m * 1));
+        ship.add(new Point(6 * m + xPos, yPos + m * 1));
+        ship.add(new Point(6 * m + xPos, yPos + m * 0));
+        ship.add(new Point(7 * m + xPos, yPos + m * 0));
+        ship.add(new Point(7 * m + xPos, yPos + m * 1));
+        ship.add(new Point(8 * m + xPos, yPos + m * 1));
+        ship.add(new Point(8 * m + xPos, yPos + m * 3));
+        ship.add(new Point(12 * m + xPos, yPos + m * 3));
+        ship.add(new Point(12 * m + xPos, yPos + m * 4));
+        ship.add(new Point(13 * m + xPos, yPos + m * 4));
+        ship.add(new Point(13 * m + xPos, yPos + m * 7));
+        return ship;
+    }
 
- addRowToGroup(getRowOfAliens(4, 30, 0));
- addRowToGroup(getRowOfAliens(4, 30, 30));
- addRowToGroup(getRowOfAliens(4, 30, 60));
- console.log(group.top, group.height, canvas.height);
- addRowToGroup(getRowOfAliens(4, 30, 90));
- console.log(group.top, group.height, canvas.height);
 
- function addRowToGroup(row) {
- row.forEach(function (t) {
- group.addWithUpdate(t);
- });
- //   group._calcBounds();
- //   group._updateObjectsCoords();
- }
+///////////////////////////////////////////////////////
+//
+// this function draws a UFO
+//
+    function drawUFO(xPosition, yPosition, magnification) {
 
- function getRowOfAliens(count, distance, offsetY) {
- var arr = [];
- var offsetX = 0;
- for (var i = 0; i < count; ++i) {
- arr.push(new fabric.Rect({left: offsetX, top: offsetY, fill: 'red', width: 20, height: 20}));
- offsetX += distance;
- }
- return arr;
- }
+        var xPos = xPosition;
+        var yPos = yPosition;
+        var m = magnification;
 
- onCompleteMoveX();
- //canvas.renderAll();
- */
+        var ufo = new Path();
+        ufo.fillColor = 'purple';
+        ufo.add(new Point(0 * m + xPos, yPos + m * 5));
+        ufo.add(new Point(0 * m + xPos, yPos + m * 4));
+        ufo.add(new Point(1 * m + xPos, yPos + m * 4));
+        ufo.add(new Point(1 * m + xPos, yPos + m * 3));
+        ufo.add(new Point(2 * m + xPos, yPos + m * 3));
+        ufo.add(new Point(2 * m + xPos, yPos + m * 2));
+        ufo.add(new Point(3 * m + xPos, yPos + m * 2));
+        ufo.add(new Point(3 * m + xPos, yPos + m * 1));
+        ufo.add(new Point(5 * m + xPos, yPos + m * 1));
+        ufo.add(new Point(5 * m + xPos, yPos + m * 0));
+        ufo.add(new Point(11 * m + xPos, yPos + m * 0));
+        ufo.add(new Point(11 * m + xPos, yPos + m * 1));
+        ufo.add(new Point(13 * m + xPos, yPos + m * 1));
+        ufo.add(new Point(13 * m + xPos, yPos + m * 2));
+        ufo.add(new Point(14 * m + xPos, yPos + m * 2));
+        ufo.add(new Point(14 * m + xPos, yPos + m * 3));
+        ufo.add(new Point(15 * m + xPos, yPos + m * 3));
+        ufo.add(new Point(15 * m + xPos, yPos + m * 4));
+        ufo.add(new Point(16 * m + xPos, yPos + m * 4));
+        ufo.add(new Point(16 * m + xPos, yPos + m * 5));
+        ufo.add(new Point(14 * m + xPos, yPos + m * 5));
+        ufo.add(new Point(14 * m + xPos, yPos + m * 6));
+        ufo.add(new Point(13 * m + xPos, yPos + m * 6));
+        ufo.add(new Point(13 * m + xPos, yPos + m * 7));
+        ufo.add(new Point(12 * m + xPos, yPos + m * 7));
+        ufo.add(new Point(12 * m + xPos, yPos + m * 6));
+        ufo.add(new Point(11 * m + xPos, yPos + m * 6));
+        ufo.add(new Point(11 * m + xPos, yPos + m * 5));
+        ufo.add(new Point(9 * m + xPos, yPos + m * 5));
+        ufo.add(new Point(9 * m + xPos, yPos + m * 6));
+        ufo.add(new Point(7 * m + xPos, yPos + m * 6));
+        ufo.add(new Point(7 * m + xPos, yPos + m * 5));
+        ufo.add(new Point(5 * m + xPos, yPos + m * 5));
+        ufo.add(new Point(5 * m + xPos, yPos + m * 6));
+        ufo.add(new Point(4 * m + xPos, yPos + m * 6));
+        ufo.add(new Point(4 * m + xPos, yPos + m * 7));
+        ufo.add(new Point(3 * m + xPos, yPos + m * 7));
+        ufo.add(new Point(3 * m + xPos, yPos + m * 6));
+        ufo.add(new Point(2 * m + xPos, yPos + m * 6));
+        ufo.add(new Point(2 * m + xPos, yPos + m * 5));
 
-var game = new Game({canvas: { width: 300, height: 300}});
-game.initScreen();
-    game.start();
+        var block = new Path();
+        block.fillColor = 'black';
+        block.add(new Point(3 * m + xPos, yPos + m * 3));
+        block.add(new Point(4 * m + xPos, yPos + m * 3));
+        block.add(new Point(4 * m + xPos, yPos + m * 4));
+        block.add(new Point(3 * m + xPos, yPos + m * 4));
+        var block = new Path();
+        block.fillColor = 'black';
+        block.add(new Point(6 * m + xPos, yPos + m * 3));
+        block.add(new Point(7 * m + xPos, yPos + m * 3));
+        block.add(new Point(7 * m + xPos, yPos + m * 4));
+        block.add(new Point(6 * m + xPos, yPos + m * 4));
+        var block = new Path();
+        block.fillColor = 'black';
+        block.add(new Point(9 * m + xPos, yPos + m * 3));
+        block.add(new Point(10 * m + xPos, yPos + m * 3));
+        block.add(new Point(10 * m + xPos, yPos + m * 4));
+        block.add(new Point(9 * m + xPos, yPos + m * 4));
+        var block = new Path();
+        block.fillColor = 'black';
+        block.add(new Point(12 * m + xPos, yPos + m * 3));
+        block.add(new Point(13 * m + xPos, yPos + m * 3));
+        block.add(new Point(13 * m + xPos, yPos + m * 4));
+        block.add(new Point(12 * m + xPos, yPos + m * 4));
 
+    }
+
+
+///////////////////////////////////////////////////////
+//
+// this function draws the lime alien
+//
+    function drawLimeAlien(xPosition, yPosition, magnification) {
+
+        var xPos = xPosition;
+        var yPos = yPosition;
+        var m = magnification;
+
+        var alien = new Path();
+        alien.fillColor = 'lime';
+        alien.add(new Point(0 * m + xPos, yPos + m * 5));
+        alien.add(new Point(0 * m + xPos, yPos + m * 2));
+        alien.add(new Point(1 * m + xPos, yPos + m * 2));
+        alien.add(new Point(1 * m + xPos, yPos + m * 1));
+        alien.add(new Point(4 * m + xPos, yPos + m * 1));
+        alien.add(new Point(4 * m + xPos, yPos + m * 0));
+        alien.add(new Point(7 * m + xPos, yPos + m * 0));
+        alien.add(new Point(7 * m + xPos, yPos + m * 1));
+        alien.add(new Point(10 * m + xPos, yPos + m * 1));
+        alien.add(new Point(10 * m + xPos, yPos + m * 2));
+        alien.add(new Point(11 * m + xPos, yPos + m * 2));
+        alien.add(new Point(11 * m + xPos, yPos + m * 5));
+        alien.add(new Point(8 * m + xPos, yPos + m * 5));
+        alien.add(new Point(8 * m + xPos, yPos + m * 6));
+        alien.add(new Point(9 * m + xPos, yPos + m * 6));
+        alien.add(new Point(9 * m + xPos, yPos + m * 7));
+        alien.add(new Point(11 * m + xPos, yPos + m * 7));
+        alien.add(new Point(11 * m + xPos, yPos + m * 8));
+        alien.add(new Point(9 * m + xPos, yPos + m * 8));
+        alien.add(new Point(9 * m + xPos, yPos + m * 7));
+        alien.add(new Point(7 * m + xPos, yPos + m * 7));
+        alien.add(new Point(7 * m + xPos, yPos + m * 6));
+        alien.add(new Point(6 * m + xPos, yPos + m * 6));
+        alien.add(new Point(6 * m + xPos, yPos + m * 5));
+        alien.add(new Point(5 * m + xPos, yPos + m * 5));
+        alien.add(new Point(5 * m + xPos, yPos + m * 6));
+        alien.add(new Point(6 * m + xPos, yPos + m * 6));
+        alien.add(new Point(6 * m + xPos, yPos + m * 7));
+        alien.add(new Point(5 * m + xPos, yPos + m * 7));
+        alien.add(new Point(5 * m + xPos, yPos + m * 6));
+        alien.add(new Point(4 * m + xPos, yPos + m * 6));
+        alien.add(new Point(4 * m + xPos, yPos + m * 7));
+        alien.add(new Point(2 * m + xPos, yPos + m * 7));
+        alien.add(new Point(2 * m + xPos, yPos + m * 8));
+        alien.add(new Point(0 * m + xPos, yPos + m * 8));
+        alien.add(new Point(0 * m + xPos, yPos + m * 7));
+        alien.add(new Point(2 * m + xPos, yPos + m * 7));
+        alien.add(new Point(2 * m + xPos, yPos + m * 6));
+        alien.add(new Point(3 * m + xPos, yPos + m * 6));
+        alien.add(new Point(3 * m + xPos, yPos + m * 5));
+        alien.add(new Point(0 * m + xPos, yPos + m * 5));
+
+        var eye = new Path();
+        eye.fillColor = 'black';
+        eye.add(new Point(3 * m + xPos, yPos + m * 3));
+        eye.add(new Point(5 * m + xPos, yPos + m * 3));
+        eye.add(new Point(5 * m + xPos, yPos + m * 4));
+        eye.add(new Point(3 * m + xPos, yPos + m * 4));
+        var eye = new Path();
+        eye.fillColor = 'black';
+        eye.add(new Point(6 * m + xPos, yPos + m * 3));
+        eye.add(new Point(8 * m + xPos, yPos + m * 3));
+        eye.add(new Point(8 * m + xPos, yPos + m * 4));
+        eye.add(new Point(6 * m + xPos, yPos + m * 4));
+
+    }
+
+
+///////////////////////////////////////////////////////
+//
+// this function draws the blue alien
+//
+    function drawBlueAlien(xPosition, yPosition, magnification) {
+
+        var xPos = xPosition;
+        var yPos = yPosition;
+        var m = magnification;
+
+        var alien = new Path();
+        alien.fillColor = 'blue';
+        alien.add(new Point(16 * m + xPos - 16 * m, yPos + m * 5));
+        alien.add(new Point(16 * m + xPos - 16 * m, yPos + m * 3));
+        alien.add(new Point(17 * m + xPos - 16 * m, yPos + m * 3));
+        alien.add(new Point(17 * m + xPos - 16 * m, yPos + m * 2));
+        alien.add(new Point(18 * m + xPos - 16 * m, yPos + m * 2));
+        alien.add(new Point(18 * m + xPos - 16 * m, yPos + m * 1));
+        alien.add(new Point(20 * m + xPos - 16 * m, yPos + m * 1));
+        alien.add(new Point(20 * m + xPos - 16 * m, yPos + m * 0));
+        alien.add(new Point(23 * m + xPos - 16 * m, yPos + m * 0));
+        alien.add(new Point(23 * m + xPos - 16 * m, yPos + m * 1));
+        alien.add(new Point(25 * m + xPos - 16 * m, yPos + m * 1));
+        alien.add(new Point(25 * m + xPos - 16 * m, yPos + m * 2));
+        alien.add(new Point(26 * m + xPos - 16 * m, yPos + m * 2));
+        alien.add(new Point(26 * m + xPos - 16 * m, yPos + m * 3));
+        alien.add(new Point(27 * m + xPos - 16 * m, yPos + m * 3));
+        alien.add(new Point(27 * m + xPos - 16 * m, yPos + m * 5));
+        alien.add(new Point(24 * m + xPos - 16 * m, yPos + m * 5));
+        alien.add(new Point(24 * m + xPos - 16 * m, yPos + m * 6));
+        alien.add(new Point(25 * m + xPos - 16 * m, yPos + m * 6));
+        alien.add(new Point(25 * m + xPos - 16 * m, yPos + m * 7));
+        alien.add(new Point(26 * m + xPos - 16 * m, yPos + m * 7));
+        alien.add(new Point(26 * m + xPos - 16 * m, yPos + m * 8));
+        alien.add(new Point(25 * m + xPos - 16 * m, yPos + m * 8));
+        alien.add(new Point(25 * m + xPos - 16 * m, yPos + m * 7));
+        alien.add(new Point(24 * m + xPos - 16 * m, yPos + m * 7));
+        alien.add(new Point(24 * m + xPos - 16 * m, yPos + m * 8));
+        alien.add(new Point(23 * m + xPos - 16 * m, yPos + m * 8));
+        alien.add(new Point(23 * m + xPos - 16 * m, yPos + m * 7));
+        alien.add(new Point(24 * m + xPos - 16 * m, yPos + m * 7));
+        alien.add(new Point(24 * m + xPos - 16 * m, yPos + m * 6));
+        alien.add(new Point(23 * m + xPos - 16 * m, yPos + m * 6));
+        alien.add(new Point(23 * m + xPos - 16 * m, yPos + m * 5));
+        alien.add(new Point(20 * m + xPos - 16 * m, yPos + m * 5));
+        alien.add(new Point(20 * m + xPos - 16 * m, yPos + m * 6));
+        alien.add(new Point(23 * m + xPos - 16 * m, yPos + m * 6));
+        alien.add(new Point(23 * m + xPos - 16 * m, yPos + m * 7));
+        alien.add(new Point(20 * m + xPos - 16 * m, yPos + m * 7));
+        alien.add(new Point(20 * m + xPos - 16 * m, yPos + m * 6));
+        alien.add(new Point(19 * m + xPos - 16 * m, yPos + m * 6));
+        alien.add(new Point(19 * m + xPos - 16 * m, yPos + m * 7));
+        alien.add(new Point(20 * m + xPos - 16 * m, yPos + m * 7));
+        alien.add(new Point(20 * m + xPos - 16 * m, yPos + m * 8));
+        alien.add(new Point(19 * m + xPos - 16 * m, yPos + m * 8));
+        alien.add(new Point(19 * m + xPos - 16 * m, yPos + m * 7));
+        alien.add(new Point(18 * m + xPos - 16 * m, yPos + m * 7));
+        alien.add(new Point(18 * m + xPos - 16 * m, yPos + m * 8));
+        alien.add(new Point(17 * m + xPos - 16 * m, yPos + m * 8));
+        alien.add(new Point(17 * m + xPos - 16 * m, yPos + m * 7));
+        alien.add(new Point(18 * m + xPos - 16 * m, yPos + m * 7));
+        alien.add(new Point(18 * m + xPos - 16 * m, yPos + m * 6));
+        alien.add(new Point(19 * m + xPos - 16 * m, yPos + m * 6));
+        alien.add(new Point(19 * m + xPos - 16 * m, yPos + m * 5));
+        alien.add(new Point(16 * m + xPos - 16 * m, yPos + m * 5));
+
+        var eye = new Path();
+        eye.fillColor = 'black';
+        eye.add(new Point(19 * m + xPos - 16 * m, yPos + m * 3));
+        eye.add(new Point(20 * m + xPos - 16 * m, yPos + m * 3));
+        eye.add(new Point(20 * m + xPos - 16 * m, yPos + m * 4));
+        eye.add(new Point(19 * m + xPos - 16 * m, yPos + m * 4));
+        var eye = new Path();
+        eye.fillColor = 'black';
+        eye.add(new Point(23 * m + xPos - 16 * m, yPos + m * 3));
+        eye.add(new Point(24 * m + xPos - 16 * m, yPos + m * 3));
+        eye.add(new Point(24 * m + xPos - 16 * m, yPos + m * 4));
+        eye.add(new Point(23 * m + xPos - 16 * m, yPos + m * 4));
+
+    }
+
+
+///////////////////////////////////////////////////////
+//
+// this function draws the red alien
+//
+    function drawRedAlien(xPosition, yPosition, magnification) {
+
+        var xPos = xPosition;
+        var yPos = yPosition;
+        var m = magnification;
+
+        var alien = new Path();
+        alien.fillColor = 'red';
+        alien.add(new Point(0 * m + xPos, yPos - 13 * m + m * 20));
+        alien.add(new Point(0 * m + xPos, yPos - 13 * m + m * 17));
+        alien.add(new Point(1 * m + xPos, yPos - 13 * m + m * 17));
+        alien.add(new Point(1 * m + xPos, yPos - 13 * m + m * 16));
+        alien.add(new Point(2 * m + xPos, yPos - 13 * m + m * 16));
+        alien.add(new Point(2 * m + xPos, yPos - 13 * m + m * 15));
+        alien.add(new Point(3 * m + xPos, yPos - 13 * m + m * 15));
+        alien.add(new Point(3 * m + xPos, yPos - 13 * m + m * 13));
+        alien.add(new Point(2 * m + xPos, yPos - 13 * m + m * 13));
+        alien.add(new Point(2 * m + xPos, yPos - 13 * m + m * 14));
+        alien.add(new Point(4 * m + xPos, yPos - 13 * m + m * 14));
+        alien.add(new Point(4 * m + xPos, yPos - 13 * m + m * 15));
+        alien.add(new Point(7 * m + xPos, yPos - 13 * m + m * 15));
+        alien.add(new Point(7 * m + xPos, yPos - 13 * m + m * 14));
+        alien.add(new Point(9 * m + xPos, yPos - 13 * m + m * 14));
+        alien.add(new Point(9 * m + xPos, yPos - 13 * m + m * 13));
+        alien.add(new Point(8 * m + xPos, yPos - 13 * m + m * 13));
+        alien.add(new Point(8 * m + xPos, yPos - 13 * m + m * 15));
+        alien.add(new Point(9 * m + xPos, yPos - 13 * m + m * 15));
+        alien.add(new Point(9 * m + xPos, yPos - 13 * m + m * 16));
+        alien.add(new Point(10 * m + xPos, yPos - 13 * m + m * 16));
+        alien.add(new Point(10 * m + xPos, yPos - 13 * m + m * 17));
+        alien.add(new Point(11 * m + xPos, yPos - 13 * m + m * 17));
+        alien.add(new Point(11 * m + xPos, yPos - 13 * m + m * 20));
+        alien.add(new Point(10 * m + xPos, yPos - 13 * m + m * 20));
+        alien.add(new Point(10 * m + xPos, yPos - 13 * m + m * 18));
+        alien.add(new Point(9 * m + xPos, yPos - 13 * m + m * 18));
+        alien.add(new Point(9 * m + xPos, yPos - 13 * m + m * 20));
+        alien.add(new Point(6 * m + xPos, yPos - 13 * m + m * 20));
+        alien.add(new Point(6 * m + xPos, yPos - 13 * m + m * 21));
+        alien.add(new Point(8 * m + xPos, yPos - 13 * m + m * 21));
+        alien.add(new Point(8 * m + xPos, yPos - 13 * m + m * 19));
+        alien.add(new Point(3 * m + xPos, yPos - 13 * m + m * 19));
+        alien.add(new Point(3 * m + xPos, yPos - 13 * m + m * 21));
+        alien.add(new Point(5 * m + xPos, yPos - 13 * m + m * 21));
+        alien.add(new Point(5 * m + xPos, yPos - 13 * m + m * 20));
+        alien.add(new Point(2 * m + xPos, yPos - 13 * m + m * 20));
+        alien.add(new Point(2 * m + xPos, yPos - 13 * m + m * 18));
+        alien.add(new Point(1 * m + xPos, yPos - 13 * m + m * 18));
+        alien.add(new Point(1 * m + xPos, yPos - 13 * m + m * 20));
+        alien.add(new Point(0 * m + xPos, yPos - 13 * m + m * 20));
+
+        var eye = new Path();
+        eye.fillColor = 'black';
+        eye.add(new Point(3 * m + xPos, yPos - 13 * m + m * 16));
+        eye.add(new Point(4 * m + xPos, yPos - 13 * m + m * 16));
+        eye.add(new Point(4 * m + xPos, yPos - 13 * m + m * 17));
+        eye.add(new Point(3 * m + xPos, yPos - 13 * m + m * 17));
+        var eye = new Path();
+        eye.fillColor = 'black';
+        eye.add(new Point(7 * m + xPos, yPos - 13 * m + m * 16));
+        eye.add(new Point(8 * m + xPos, yPos - 13 * m + m * 16));
+        eye.add(new Point(8 * m + xPos, yPos - 13 * m + m * 17));
+        eye.add(new Point(7 * m + xPos, yPos - 13 * m + m * 17));
+
+    }
+
+
+///////////////////////////////////////////////////////
+//
+// this function draws the yellow alien
+//
+    function drawYellowAlien(xPosition, yPosition, magnification) {
+
+        var xPos = xPosition;
+        var yPos = yPosition;
+        var m = magnification;
+
+        var alien = new Path();
+        alien.fillColor = 'yellow';
+        alien.add(new Point(16 * m + xPos - 16 * m, yPos - 13 * m + m * 20));
+        alien.add(new Point(16 * m + xPos - 16 * m, yPos - 13 * m + m * 14));
+        alien.add(new Point(17 * m + xPos - 16 * m, yPos - 13 * m + m * 14));
+        alien.add(new Point(17 * m + xPos - 16 * m, yPos - 13 * m + m * 16));
+        alien.add(new Point(18 * m + xPos - 16 * m, yPos - 13 * m + m * 16));
+        alien.add(new Point(18 * m + xPos - 16 * m, yPos - 13 * m + m * 15));
+        alien.add(new Point(19 * m + xPos - 16 * m, yPos - 13 * m + m * 15));
+        alien.add(new Point(19 * m + xPos - 16 * m, yPos - 13 * m + m * 13));
+        alien.add(new Point(18 * m + xPos - 16 * m, yPos - 13 * m + m * 13));
+        alien.add(new Point(18 * m + xPos - 16 * m, yPos - 13 * m + m * 14));
+        alien.add(new Point(20 * m + xPos - 16 * m, yPos - 13 * m + m * 14));
+        alien.add(new Point(20 * m + xPos - 16 * m, yPos - 13 * m + m * 15));
+        alien.add(new Point(23 * m + xPos - 16 * m, yPos - 13 * m + m * 15));
+        alien.add(new Point(23 * m + xPos - 16 * m, yPos - 13 * m + m * 14));
+        alien.add(new Point(25 * m + xPos - 16 * m, yPos - 13 * m + m * 14));
+        alien.add(new Point(25 * m + xPos - 16 * m, yPos - 13 * m + m * 13));
+        alien.add(new Point(24 * m + xPos - 16 * m, yPos - 13 * m + m * 13));
+        alien.add(new Point(24 * m + xPos - 16 * m, yPos - 13 * m + m * 15));
+        alien.add(new Point(25 * m + xPos - 16 * m, yPos - 13 * m + m * 15));
+        alien.add(new Point(25 * m + xPos - 16 * m, yPos - 13 * m + m * 16));
+        alien.add(new Point(26 * m + xPos - 16 * m, yPos - 13 * m + m * 16));
+        alien.add(new Point(26 * m + xPos - 16 * m, yPos - 13 * m + m * 14));
+        alien.add(new Point(27 * m + xPos - 16 * m, yPos - 13 * m + m * 14));
+        alien.add(new Point(27 * m + xPos - 16 * m, yPos - 13 * m + m * 18));
+        alien.add(new Point(26 * m + xPos - 16 * m, yPos - 13 * m + m * 18));
+        alien.add(new Point(26 * m + xPos - 16 * m, yPos - 13 * m + m * 19));
+        alien.add(new Point(25 * m + xPos - 16 * m, yPos - 13 * m + m * 19));
+        alien.add(new Point(25 * m + xPos - 16 * m, yPos - 13 * m + m * 21));
+        alien.add(new Point(26 * m + xPos - 16 * m, yPos - 13 * m + m * 21));
+        alien.add(new Point(26 * m + xPos - 16 * m, yPos - 13 * m + m * 20));
+        alien.add(new Point(24 * m + xPos - 16 * m, yPos - 13 * m + m * 20));
+        alien.add(new Point(24 * m + xPos - 16 * m, yPos - 13 * m + m * 19));
+        alien.add(new Point(19 * m + xPos - 16 * m, yPos - 13 * m + m * 19));
+        alien.add(new Point(19 * m + xPos - 16 * m, yPos - 13 * m + m * 20));
+        alien.add(new Point(17 * m + xPos - 16 * m, yPos - 13 * m + m * 20));
+        alien.add(new Point(17 * m + xPos - 16 * m, yPos - 13 * m + m * 21));
+        alien.add(new Point(18 * m + xPos - 16 * m, yPos - 13 * m + m * 21));
+        alien.add(new Point(18 * m + xPos - 16 * m, yPos - 13 * m + m * 19));
+        alien.add(new Point(17 * m + xPos - 16 * m, yPos - 13 * m + m * 19));
+        alien.add(new Point(17 * m + xPos - 16 * m, yPos - 13 * m + m * 18));
+        alien.add(new Point(16 * m + xPos - 16 * m, yPos - 13 * m + m * 18));
+
+        var eye = new Path();
+        eye.fillColor = 'black';
+        eye.add(new Point(19 * m + xPos - 16 * m, yPos - 13 * m + m * 16));
+        eye.add(new Point(20 * m + xPos - 16 * m, yPos - 13 * m + m * 16));
+        eye.add(new Point(20 * m + xPos - 16 * m, yPos - 13 * m + m * 17));
+        eye.add(new Point(19 * m + xPos - 16 * m, yPos - 13 * m + m * 17));
+        var eye = new Path();
+        eye.fillColor = 'black';
+        eye.add(new Point(23 * m + xPos - 16 * m, yPos - 13 * m + m * 16));
+        eye.add(new Point(24 * m + xPos - 16 * m, yPos - 13 * m + m * 16));
+        eye.add(new Point(24 * m + xPos - 16 * m, yPos - 13 * m + m * 17));
+        eye.add(new Point(23 * m + xPos - 16 * m, yPos - 13 * m + m * 17));
+
+    }
+
+
+}
