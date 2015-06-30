@@ -14,13 +14,13 @@ function Game(params) {
         timers: {}
     };
     var textures = {
-        alien1: 'http://localhost:63342/fabric/img/alien1.png',
-        alien2: 'http://localhost:63342/fabric/img/alien2.png',
-        alien3: 'http://localhost:63342/fabric/img/alien3.png',
-        alien4: 'http://localhost:63342/fabric/img/alien4.png',
-        player: 'http://localhost:63342/fabric/img/player.png',
-        missile: 'http://localhost:63342/fabric/img/missile.png',
-        alienmissile: 'http://localhost:63342/fabric/img/alien-missile.png'
+        alien1: '/img/alien1.png',
+        alien2: '/img/alien2.png',
+        alien3: '/img/alien3.png',
+        alien4: '/img/alien4.png',
+        player: '/img/player.png',
+        missile: '/img/missile.png',
+        alienmissile: '/img/alien-missile.png'
     };
 
     this.achievements = {
@@ -229,11 +229,6 @@ Game.prototype.alienShot = function () {
     animation.start();
     self.animationHandlers.alienmissile = animation;
 }
-
-Helper.prototype.random = function (min, max) {
-    return Math.floor(Math.random() * (max - min)) + min;
-}
-
 Game.prototype.addAlienRow = function (y, count, type) {
     var xOffs = 100;
     var textureSize = 30;
@@ -372,20 +367,6 @@ Game.prototype.KEY_DOWN = 40;
 
 function Helper() {
 }
-Helper.prototype.normalize = function (properties, defaults, overrides) {
-    var o = JSON.parse(JSON.stringify(overrides));
-    properties.forEach(function (t) {
-        o[t] = overrides[t] * defaults[t];
-    });
-    return o;
-};
-Helper.prototype.merge = function (_source, _with) {
-    for (var i in _with) {
-        if (!_source[i]) {
-            _source[i] = _with[i];
-        }
-    }
-};
 Helper.prototype.prepareImages = function (srcArr, done) {
     this.images = {};
     var self = this;
@@ -406,23 +387,6 @@ Helper.prototype.prepareImages = function (srcArr, done) {
 };
 Helper.prototype.getImage = function (src) {
     return this.images[src];
-};
-Helper.prototype.loadImage = function (data, cb) {
-    if (!this.images[data.src]) {
-        this.images[data.src] = new Image();
-    }
-    var imageObj = new Image();
-    imageObj.src = data.src;
-    imageObj.onload = function () {
-        var img = new Kinetic.Image({
-            x: data.x,
-            y: data.y,
-            image: imageObj,
-            width: data.width,
-            height: data.height
-        });
-        cb(img);
-    };
 };
 
 Helper.prototype.getBounds = function (childs) {
@@ -457,4 +421,7 @@ Helper.prototype.doObjectsCollide = function (a, b) { // a and b are your object
             (ca.x > (cb.x + b.getWidth()))
         );
 };
+Helper.prototype.random = function (min, max) {
+    return Math.floor(Math.random() * (max - min)) + min;
+}
 
