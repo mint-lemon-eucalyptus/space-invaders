@@ -1,9 +1,11 @@
 function Game(params) {
-    var params = this.params = arguments[0] || {};
-//    document.getElementById(params.stage.container).style.background = '#000';
-    this.stage = new Kinetic.Stage(params.stage);
-    this.layer = new Kinetic.Layer();
-    this.stage.add(this.layer);
+    this.params = arguments[0] || {};
+    document.getElementById(params.stage.container).style.background = '#000';
+    this.stage = new Kinetic.Stage(this.params.stage);
+    this.layer = new Kinetic.Layer();//main game layer
+    this.startupScreen = new Kinetic.Layer();//start game layer
+    this.endScreen = new Kinetic.Layer();//game over layer
+
     this.helper = new Helper();
     //game environment variables and flags
     this.env = {
@@ -16,39 +18,173 @@ function Game(params) {
         alien2: 'http://localhost:63342/fabric/img/alien2.png',
         alien3: 'http://localhost:63342/fabric/img/alien3.png',
         alien4: 'http://localhost:63342/fabric/img/alien4.png',
-        player: 'http://localhost:63342/fabric/img/player.png'
+        player: 'http://localhost:63342/fabric/img/player.png',
+        missile: 'http://localhost:63342/fabric/img/missile.png',
+        alienmissile: 'http://localhost:63342/fabric/img/alien-missile.png'
+    };
+
+    this.achievements = {
+        alien1: 20,
+        alien2: 50,
+        alien3: 100,
+        alien4: 200
     };
     this.textFields = {};
-    this.textFields = {};
-    this.group = new Kinetic.Group({
-        clip: {
-            x: 0,
-            y: 0,
-            width: 1000,
-            height: 1000
-        }
-    });
-    this.layer.add(this.group);
+    this.animationHandlers = {};
+
+    this.gamePlay = {
+        lives: 3,
+        aliensMoveAmplitude: (this.stage.width() - 10) / 2
+    };
 
     var self = this;
 
+    self.playField = {
+        x: 10,
+        y: 40,
+        width: self.stage.width() - 20,
+        height: self.stage.height() - 40
+    };
+
     this.helper.prepareImages(textures, function () {
-        console.log('images are loaded')
-        var firstAlienRowY = 50;
-        var alienRowsDistance = 40;
-        var aliensRowsX = 10;
-        var amplitude = (580 - (aliensRowsX * 30 + (aliensRowsX - 1) * 10)) / 2;
-        self.initAliens(firstAlienRowY, alienRowsDistance, aliensRowsX);
-        self.startAlienMoving(amplitude);
-        self.addText('score', 100, 15, 'ssaad', 20, 'green', 'Calibri');
-        self.updateText('score', 'score: 0');
-        self.player = self.addTexture('player', self.stage.width() / 2, self.stage.height() - 40 - 5, 80, 40);
-        setTimeout(function () {
-            self.player.x(self.player.x() + 100)
-        }, 1000)
-        self.layer.add(self.player)
+        console.log('images are loaded');
+        self.drawStartScreen();
+        //self.drawGameOverScreen()
+        //self.drawGameScreen();
     });
 }
+Game.prototype.resource = {
+    text: {
+        startUp: '"space invaders"\n           game',
+        pressAnyKey: 'press any key to start game',
+        yourScore: 'Score: ',
+        win: 'you win!!!',
+        loose: 'you loose...',
+        restart: 'press "r" to restart'
+    }
+};
+
+Game.prototype.drawStartScreen = function () {
+    this.env.state = this.STATE_IDLE;
+    this.startupScreen.removeChildren();
+    this.stage.add(this.startupScreen);
+    this.startupScreen.add(this.createText('hello', this.stage.width() / 2 - 110, this.stage.height() / 2, this.resource.text.startUp, 30, 'green'));
+    this.startupScreen.add(this.createText('pak', this.stage.width() / 2 - 170, this.stage.height() / 2 + 90, this.resource.text.pressAnyKey, 30, 'red'));
+    this.startupScreen.draw();
+    this.setKeyboardHandlers();
+};
+Game.prototype.drawGameScreen = function () {
+    this.endScreen.remove();
+    this.startupScreen.remove();
+    var firstAlienRowY = 50;
+    var alienRowsDistance = 40;
+    var gamePlay = this.params.gamePlay;
+    var aliensInRow = gamePlay.aliensInRow || 10;
+    this.env.state = this.STATE_STARTED;
+    this.env.lives = this.params.gamePlay.lives;
+    this.env.score = 0;
+    this.startupScreen.remove();
+    if (this.player) {  //game was restarted
+        this.layer.removeChildren();
+    }
+    this.group = new Kinetic.Group({});//group for aliens
+    this.stage.add(this.layer)
+    this.layer.add(this.group);
+    this.initAliens(firstAlienRowY, alienRowsDistance, aliensInRow);
+    this.layer.add(this.createText('score', 100, 15, 'score: 0', 20, 'green'));
+    this.layer.add(this.createText('lives', 300, 15, 'lives: ' + this.env.lives, 20, 'green'));
+    this.layer.add(this.createRect(this.playField.x, this.playField.y, this.playField.width, this.playField.height, 'transparent', 'green', 3));
+    this.group.bounds = this.helper.getBounds(this.group.children);
+    this.player = this.addTexture('player', this.stage.width() / 2, this.stage.height() - 40 - 5, 80, 40);
+    this.layer.add(this.player);
+    this.playerShot();
+    this.startAlienMoving((this.stage.width() - 40 - (aliensInRow * 30 + (aliensInRow - 1) * 10)) / 2);
+    this.layer.draw();
+    this.setKeyboardHandlers();
+    this.alienShot();
+};
+Game.prototype.drawGameOverScreen = function (win) {
+    this.env.state = this.STATE_ENDED;
+    this.env.lives = this.params.gamePlay.lives;
+    this.layer.remove();
+    this.stage.add(this.endScreen);
+    var resultText = win ? this.resource.text.win : this.resource.text.loose;
+
+    this.endScreen.add(this.createText('result', this.stage.width() / 2 - 110, this.stage.height() / 2 - 90, resultText, 30, 'green'));
+    this.endScreen.add(this.createText('your score', this.stage.width() / 2 - 120, this.stage.height() / 2, this.resource.text.yourScore + this.env.score, 30, 'red'));
+    this.endScreen.add(this.createText('control', this.stage.width() / 2 - 120, this.stage.height() / 2 + 90, this.resource.text.restart, 30, 'blue'));
+    this.endScreen.draw();
+    this.setKeyboardHandlers();
+};
+
+Game.prototype.setKeyboardHandlers = function () {
+    var self = this;
+    switch (this.env.state) {//listen to any key
+        case this.STATE_IDLE:
+        {
+            window.onkeydown = function (e) {
+                console.log('idle')
+                self.drawGameScreen();
+            };
+            break;
+        }
+        case  this.STATE_STARTED:
+        {
+            console.log('started');
+            var moveSpeed = self.params.gamePlay.playerSpeed || 10;
+            window.onkeydown = function (e) {
+                var ship = self.player;
+                switch (e.keyCode) {
+                    case self.KEY_LEFT:
+                    {
+                        var x = ship.x();
+                        if (x <= 10) {
+                            return false;
+                        }
+                        ship.setX(x - moveSpeed);
+                        self.layer.draw();
+                        break;
+                    }
+                    case self.KEY_RIGHT:
+                    {
+                        var x = ship.x();
+                        if ((x + ship.width()) >= (self.stage.width() - 10)) {
+                            break;
+                        }
+                        ship.setX(x + moveSpeed);
+                        self.layer.draw();
+                        break;
+                    }
+                    case self.KEY_UP:
+                    {
+                        break;
+                    }
+                    case self.KEY_DOWN:
+                    {
+                        break;
+                    }
+                    default :
+                    {
+//                        console.log(e.keyCode);
+                        return;
+                    }
+                }
+            }
+            break;
+        }
+        case self.STATE_ENDED:
+        {
+            window.onkeydown = function (e) {
+                console.log('ended', e.keyCode);
+                if (e.keyCode === 82) {
+                    self.drawGameScreen();
+                }
+            };
+            break;
+        }
+    }
+};
+
 Game.prototype.initAliens = function (firstAlienRowY, alienRowsDistance, aliensRowsX) {
     var self = this;
     self.addAlienRow(firstAlienRowY, aliensRowsX, 'alien1');
@@ -56,6 +192,46 @@ Game.prototype.initAliens = function (firstAlienRowY, alienRowsDistance, aliensR
     self.addAlienRow(firstAlienRowY + alienRowsDistance * 2, aliensRowsX, 'alien3');
     self.addAlienRow(firstAlienRowY + alienRowsDistance * 3, aliensRowsX, 'alien4');
     this.layer.draw();
+};
+
+Game.prototype.alienShot = function () {
+    if (this.env.state !== this.STATE_STARTED) {
+        return;
+    }
+    var self = this;
+    var alien = this.group.children[this.helper.random(0, this.group.children.length)];
+
+    var pos = alien.getAbsolutePosition();
+    var missile = this.addTexture('alienmissile', pos.x + alien.width() / 2, pos.y);
+    this.layer.add(missile);
+    var animation = new Kinetic.Animation(function (frame) {
+        var y = missile.y();
+        if (y >= self.stage.height()) {
+            animation.stop();
+            missile.remove();
+            self.alienShot();
+        } else {
+            missile.y(missile.y() + self.params.gamePlay.alienMissileSpeed || 10);
+            if (self.helper.doObjectsCollide(self.player, missile)) {
+                animation.stop();
+                //    self.player.remove();
+                missile.remove();
+                self.env.lives -= 1;
+                self.updateText('lives', 'lives: ' + self.env.lives);
+                if (self.env.lives > 0) {
+                    self.alienShot();
+                } else {    //player loses
+                    self.onStop(false);
+                }
+            }
+        }
+    }, self.layer);
+    animation.start();
+    self.animationHandlers.alienmissile = animation;
+}
+
+Helper.prototype.random = function (min, max) {
+    return Math.floor(Math.random() * (max - min)) + min;
 }
 
 Game.prototype.addAlienRow = function (y, count, type) {
@@ -69,8 +245,7 @@ Game.prototype.addAlienRow = function (y, count, type) {
         arr.push(alien);
     }
     return arr;
-}
-
+};
 Game.prototype.addTexture = function (name, x, y, w, h) {
     var texture = new Kinetic.Image({
         x: x,
@@ -78,244 +253,122 @@ Game.prototype.addTexture = function (name, x, y, w, h) {
         width: w, height: h,
         image: this.helper.getImage(name)
     });
-    this.layer.draw();
+    texture._actorClass = name;
     return texture;
-}
-Game.prototype.addText = function (id, x, y, text, size, fill, ff) {
-    var textItem = new Kinetic.Text({
+};
+Game.prototype.createRect = function (x, y, w, h, fill, stroke, sw) {
+    var item = new Kinetic.Rect({
         x: x,
         y: y,
-        text: text,
-        fontSize: size,
-        fontFamily: ff,
-        fill: fill
+        width: w,
+        height: h,
+        fill: fill,
+        stroke: stroke,
+        strokeWidth: sw
     });
-    this.textFields[id] = textItem;
-    this.layer.add(textItem);
-    return textItem;
-}
+    return item;
+};
+Game.prototype.createText = function (id, x, y, text, size, fill, ff) {
+    var item = this.textFields[id];
+    if (!item) {
+        var item = new Kinetic.Text({
+            x: x,
+            y: y,
+            text: text,
+            fontSize: size,
+            fontFamily: ff || 'Calibri',
+            fill: fill
+        });
+        this.textFields[id] = item;
+    } else {
+        item.setText(text);
+    }
+    return item;
+};
 Game.prototype.updateText = function (id, newVal) {
     this.textFields[id].setText(newVal);
-}
+};
 Game.prototype.startAlienMoving = function (amplitude) {
     var self = this;
     var period = 2000;
     console.log(self.group.getSize());
     // in ms
-    var centerX = 0;
+    var stepX = this.params.gamePlay.alienSpeedX, stepY = this.params.gamePlay.alienSpeedY;
     var anim = new Kinetic.Animation(function (frame) {
-        self.group.setX(amplitude * Math.sin(frame.time * 1 * Math.PI / period) + centerX);
+        var x = self.group.x();
+        if (x <= -amplitude || x >= amplitude) {
+            stepX = -stepX;
+            var yBot = self.group.bounds.y2, y = self.group.y();
+            if ((y + yBot + stepY) >= self.player.y()) {
+                self.onStop(false);
+            }
+            self.group.y(self.group.y() + stepY);
+        }
+        self.group.setX(x + stepX);
     }, self.layer);
     anim.start();
-}
-
-//draw required fields and elements on screen
-Game.prototype.initScreen = function (done) {
-    var layer = this.layer;
-
-    var group = new Kinetic.Group({
-        x: 0,
-        y: 40
-    });
-    layer.add(group);
-
-    var canvas = this.canvas;
-    var self = this;
-    var t = this.params.canvas;
-    this.canvasDefaults = {top: t.height, left: t.width, height: t.height, width: t.width};
-
-    //render all controls based on parameters in prototype
-    var controlFamily = this.CONTROLS.Text;
-    for (var control in controlFamily) {
-        //recalculate object`s positions and sizing scaled by real canvas size and scaling factors defined in prototype
-        var scoreParams = this.helper.normalize(['top', 'left'], this.canvasDefaults, controlFamily[control]);
-        this.controls[control] = new fabric.Text(scoreParams.value, scoreParams);
-        canvas.add(this.controls[control]);
+    self.animationHandlers.aliens = anim;
+};
+Game.prototype.onStop = function (win) {
+    this.env.state = this.STATE_ENDED;
+    for (var i in this.animationHandlers) {
+        this.animationHandlers[i].stop();
     }
-    this.addImg('ship', function (ship) {
-        ship = self.controls.ship;
-        self.canvas.add(ship);
-        done();
-    }, this.helper.normalize(['top', 'left'], this.canvasDefaults, this.CONTROLS.Image.ship));
-}
-
-Game.prototype.updateControl = function (name, prop, newval) {
-    this.controls[name][prop] = newval;
-    this.canvas.renderAll();
-}
-
-Game.prototype.start = function () {
-    this.updateControl('score', 'text', this.CONTROLS.Text.score.value + this.env.score);
-    var params = arguments[0] || this.params;
-    window.onkeydown = onKeyDown;
+    this.drawGameOverScreen(win);
+};
+Game.prototype.playerShot = function () {
+    if (this.env.state !== this.STATE_STARTED) {
+        return;
+    }
+    var missile = this.addTexture('missile', this.player.x() + (this.player.width()) / 2, this.player.y() - 20);
     var self = this;
-    self.env.timers.intervalHandle = setInterval(playerMissile, self.GAMEPLAY_SHIP_CANNON_INTERVAL);
-    this.env.score = 0;
-    function onKeyDown(e) {
-        switch (e.keyCode) {
-            case self.KEY_LEFT:
-            {
-                if (ship.left <= 0) {
-                    return false;
-                }
-                ship.left -= self.CONTROLS_SHIP_STEP;
-                self.canvas.renderAll();
-                break;
-            }
-            case self.KEY_RIGHT:
-            {
-                if ((ship.left + ship.width) >= self.DEFAULTS_CANVAS_PARAMS.width) {
+
+    this.layer.add(missile);
+    var animation = new Kinetic.Animation(function (frame) {
+        var y = missile.y();
+        if (y <= 0) {
+            animation.stop();
+            missile.remove();
+            self.playerShot();
+        } else {
+            missile.y(missile.y() - 13);
+            var arr = self.group.children;
+            for (var i = 0; i < arr.length; ++i) {
+                var item = arr[i];
+                if (self.helper.doObjectsCollide(item, missile)) {
+                    animation.stop();
+                    item.remove();
+                    missile.remove();
+                    var achievement = self.getAchievement(item._actorClass);
+                    self.env.score += achievement;
+                    self.updateText('score', 'score: ' + self.env.score);
+                    if (arr.length > 0) {
+                        self.playerShot();
+                    } else {    //player wins
+                        self.onStop(true);
+                    }
                     break;
                 }
-                ship.left += self.CONTROLS_SHIP_STEP;
-                break;
-            }
-            case self.KEY_UP:
-            {
-                break;
-            }
-            case self.KEY_DOWN:
-            {
-                break;
-            }
-            default :
-            {
-//                console.log(e.keyCode);
-                return;
             }
         }
-        self.canvas.renderAll();
-        return false;
-    }
+    }, self.layer);
+    animation.start();
+    self.animationHandlers.missile = animation;
+};
 
-    //draw player`s ship
-    var ship = self.controls.ship;
-
-    this.aliens = new fabric.Group([], {
-        top: 0,
-        left: 0
-    });
-    this.canvas.add(this.aliens);
-
-    function playerMissile() {
-        var missileParams = self.CONTROLS_MISSILE;
-        var missile = new fabric.Rect({
-            left: ship.left + ship.width / 2 - missileParams.width / 2,
-            top: ship.top - missileParams.height,
-            fill: 'red',
-            width: missileParams.width, height: missileParams.height});
-        self.canvas.add(missile);
-
-        missile.animate('top', 0, {
-            onChange: checkCollisions,
-            onComplete: function () {
-                self.canvas.remove(missile)
-            },
-            duration: 700,
-            easing: fabric.util.ease.easeOutSine
-        });
-
-        function checkCollisions() {
-            var missileY = missile.top
-            var missileX = missile.left
-            if (self.aliens._objects.length >= 3) {
-                var a = self.aliens._objects[0];
-                var b = self.aliens._objects[1];
-                var alien = self.aliens._objects[2];
-                var alienX = alien.left
-                var alienY = alien.top
-                console.log(alienX)
-                //     console.log(a.left, b.left);
-                //     console.log(a.intersectsWithObject(b));
-            }
-
-            self.canvas.renderAll();
-        }
-
-    }
-
-    function createAlien(x, y, type, name) {
-        var alien = new fabric.Rect({left: x, top: y, fill: 'red', width: 20, height: 20});
-
-        self.controls[name] = alien;
-        //  console.log(alien);
-        alien.top = x;
-        alien.left = y;
-        self.aliens.addWithUpdate(alien);//add it to group
-        self.canvas.renderAll();
-        //   console.log(alien.top, alien.left);
-    }
-
-    createAlien(50, 50, 'type1', 'a1');
-    createAlien(50, 50 + 10, 'type1', 'a1');
-    createAlien(50, 50 + 60, 'type1', 'a1');
-    createAlien(50, 50 + 90, 'type1', 'a1');
-    createAlien(50, 50 + 120, 'type1', 'a1');
-
-    var animateX = 200;
-
-    function onCompleteMoveX() {
-        animateX = animateX == 0 ? 300 - self.aliens.width : 0;
-        //    animateProperty = animateProperty == 'left' ? 'right' : 'left';
-        self.aliens.animate('left', animateX, {
-            onChange: onChange,
-            onComplete: onCompleteMoveX,
-            duration: 2000,
-            easing: fabric.util.ease.easeOutSine
-        });
-    }
-
-    function onChange() {
-        self.canvas.renderAll();
-    }
-
-    onCompleteMoveX()
-
-}
-
-Game.prototype.addImg = function (name, cb, controlData) {
-    var self = this;
-    fabric.Image.fromURL(controlData.url, function (img) {
-        self.controls[name] = img;
-        cb(img);
-    }, controlData);
-}
-
-
-//defaults here
-Game.prototype.CONTROLS_TEXTSIZE = 25;
-Game.prototype.CONTROLS_SHIP_STEP = 10;
-Game.prototype.CONTROLS_MISSILE = {width: 30, height: 15};
-Game.prototype.GAMEPLAY_SHIP_CANNON_INTERVAL = 1000;
-
-
-/*define scaling*/
-//all controls here
-Game.prototype.CONTROLS = {
-    Text: {
-        score: {value: 'score: ', left: 0.15, top: 0.01, fontSize: Game.prototype.CONTROLS_TEXTSIZE, fill: 'red'},
-        lives: {value: 'lives: ', left: 0.65, top: 0.01, fontSize: Game.prototype.CONTROLS_TEXTSIZE, fill: 'red'}
-    },
-    Image: {
-        ship: {url: '/fabric/img/ship.png', left: 0.4, top: 0.9},
-        missile: {url: '/fabric/img/missile.png'},
-        aliens: {type1: {url: '/fabric/img/alien1.png'}}
-    }
+Game.prototype.getAchievement = function (actorClass) {
+    return this.achievements[actorClass];
 };
 
 
+Game.prototype.STATE_IDLE = 0;
+Game.prototype.STATE_STARTED = 1;
+Game.prototype.STATE_ENDED = 2;
+
 Game.prototype.KEY_LEFT = 37;
-Game.prototype.KEY_UP = 38
+Game.prototype.KEY_UP = 38;
 Game.prototype.KEY_RIGHT = 39;
 Game.prototype.KEY_DOWN = 40;
-
-Game.prototype.DEFAULTS_CANVAS_PARAMS = {parent: 'body', width: 300, height: 300, id: 'spaceInvaders'};
-
-
-Game.prototype.STATE_STARTED = 'STARTED';
-Game.prototype.STATE_IDLE = 'IDLE';
-Game.prototype.STATE_STARTED = 'STARTED';
-
 
 function Helper() {
 }
@@ -325,14 +378,14 @@ Helper.prototype.normalize = function (properties, defaults, overrides) {
         o[t] = overrides[t] * defaults[t];
     });
     return o;
-}
+};
 Helper.prototype.merge = function (_source, _with) {
     for (var i in _with) {
         if (!_source[i]) {
             _source[i] = _with[i];
         }
     }
-}
+};
 Helper.prototype.prepareImages = function (srcArr, done) {
     this.images = {};
     var self = this;
@@ -350,10 +403,10 @@ Helper.prototype.prepareImages = function (srcArr, done) {
     }, function () {
         done();
     });
-}
+};
 Helper.prototype.getImage = function (src) {
     return this.images[src];
-}
+};
 Helper.prototype.loadImage = function (data, cb) {
     if (!this.images[data.src]) {
         this.images[data.src] = new Image();
@@ -370,16 +423,38 @@ Helper.prototype.loadImage = function (data, cb) {
         });
         cb(img);
     };
-}
+};
 
+Helper.prototype.getBounds = function (childs) {
+    var minX = Number.MAX_VALUE, minY = Number.MAX_VALUE, maxX = Number.MIN_VALUE, maxY = Number.MIN_VALUE;
+    childs.forEach(function (item) {
+        var x = item.x(), y = item.y(), x2 = item.width() + x, y2 = item.height() + y;
+        console.log(x, y, x2, y2);
+        if (x < minX) {
+            minX = x;
+        }
+        if (y < minY) {
+            minY = y;
+        }
+        if (x2 > maxX) {
+            maxX = x2;
+        }
+        if (y2 > maxY) {
+            maxY = y2;
+        }
+    });
+    return{
+        x1: minX, y1: minY, x2: maxX, y2: maxY
+    }
+};
 Helper.prototype.doObjectsCollide = function (a, b) { // a and b are your objects
     var ca = a.getAbsolutePosition(), cb = b.getAbsolutePosition();
-    console.log(ca, cb, a.getHeight(), a.getWidth(), b.getHeight(), b.getWidth());
+    //   console.log(ca, cb, a.getHeight(), a.getWidth(), b.getHeight(), b.getWidth());
     return !(
         ((ca.y + a.getHeight()) < (cb.y)) ||
             (ca.y > (cb.y + b.getHeight())) ||
             ((ca.x + a.getWidth()) < cb.x) ||
             (ca.x > (cb.x + b.getWidth()))
         );
-}
+};
 
